@@ -22,7 +22,7 @@ spec:
         image: "bagetter/bagetter:{{ .Chart.AppVersion }}"
         imagePullPolicy: IfNotPresent
         ports:
-        - containerPort: {{ .Values.bagetter.internalPort | int }}
+        - containerPort: {{ .Values.internalPort | int }}
           name: http
         # bagetter does not currently support this, but there is a PR for the project for a future update https://github.com/bagetter/BaGetter/pull/106
         # readinessProbe:
@@ -44,7 +44,7 @@ spec:
             cpu: 100m
             memory: 256Mi
         volumeMounts:
-        - mountPath: {{ .Values.bagetter.storagePath }}
+        - mountPath: {{ .Values.storagePath }}
           name: storage
           readOnly: false
         envFrom:
