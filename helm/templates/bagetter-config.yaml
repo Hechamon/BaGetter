@@ -1,0 +1,14 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{ printf "%s-%s" .Release.Name "bagetter" | trunc 63 | trimSuffix "-" }}
+data:
+  ApiKey: "{{ .Values.apiKey }}"
+  Storage__Type: "FileSystem"
+  Storage__Path: "{{ .Values.storagePath }}"
+  Database__Type: "Sqlite"
+  Database__ConnectionString: "Data Source={{ .Values.storagePath }}/db/bagetter.db"
+  Search__Type: "Database"
+  Mirror__Enabled: "true"
+  Mirror__PackageSource: "https://api.nuget.org/v3/index.json"
+  PackageDeletionBehavior: "HardDelete"

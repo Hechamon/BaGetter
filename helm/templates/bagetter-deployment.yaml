@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: {{ $fullname := printf "%s-%s" .Release.Name "bagetter" | trunc 63 | trimSuffix "-" }}
+  name: {{ $fullname }}
+  labels:
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+spec:
+  selector:
+    matchLabels:
+      app: {{ $fullname }}
+  replicas: 1
+  revisionHistoryLimit: 10
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: {{ $fullname }}
+    spec:
+      containers:
+      - name: bagetter
+        image: "bagetter/bagetter:{{ .Chart.AppVersion }}"
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: {{ .Values.bagetter.internalPort | int }}
+          name: http
+        # bagetter does not currently support this, but there is a PR for the project for a future update https://github.com/bagetter/BaGetter/pull/106
+        # readinessProbe:
+        #   httpGet:
+        #     path: /healthz
+        #     port: http
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          privileged: false
+          readOnlyRootFilesystem: false
+        resources:
+          limits:
+            cpu: 250m
+            memory: 512Mi
+          requests:
+            cpu: 100m
+            memory: 256Mi
+        volumeMounts:
+        - mountPath: {{ .Values.bagetter.storagePath }}
+          name: storage
+          readOnly: false
+        envFrom:
+        - configMapRef:
+            name: {{ $fullname }}
+      volumes:
+      - name: storage
+        persistentVolumeClaim:
+          claimName: {{ $fullname }}
